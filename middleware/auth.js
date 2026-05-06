@@ -24,3 +24,19 @@ function authenticate(req, res, next) {
     return res.status(403).json({ error: message });
   }
 }
+
+function requireRole(role) {
+  return function (req, res, next) {
+    if (!req.user) {
+      return res.status(401).json({ error: "Ej autentiserad." });
+    }
+    if (req.user.role !== role) {
+      return res.status(403).json({
+        error: `Åtkomst nekad. Rollen '${role}' krävs.`,
+      });
+    }
+    next();
+  };
+}
+
+module.exports = { authenticate, requireRole };
