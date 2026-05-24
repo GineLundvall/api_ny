@@ -14,3 +14,23 @@ router.get("/token-info", authenticate, (req, res) => {
     expiresAt:  new Date(payload.exp * 1000).toISOString(),
   });
 });
+router.get("/admin-only", authenticate, requireRole("administrator"), (req, res) => {
+  res.json({
+    message: `Välkommen ${req.user.username}! Du har administratörsåtkomst.`,
+    secretData: "Detta är hemlig administratörsinformation.",
+  });
+});
+
+router.get("/editor-only", authenticate, (req, res, next) => {
+  const allowed = ["editor", "administrator"];
+  if (!allowed.includes(req.user.role)) {
+    return res.status(403).json({ error: "Rollen 'editor' eller 'administrator' krävs." });
+  }
+  next();
+}, (req, res) => {
+  res.json({
+    message: `Välkommen ${req.user.username}! Du har editor-åtkomst.`,
+  });
+});
+
+module.exports = router;
